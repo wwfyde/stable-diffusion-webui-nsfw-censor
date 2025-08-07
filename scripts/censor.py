@@ -73,8 +73,9 @@ class NsfwCheckScript(scripts.Script):
 def load_replacement(x):
     try:
         hwc = x.shape
-        image_path = pathlib.Path(__file__).absolute().parent.joinpath("NSFW_replace.png")
+        image_path = pathlib.Path(__file__).absolute().parent.joinpath("NSFW_replace.jpg")
         y = Image.open(image_path).convert("RGB").resize((hwc[1], hwc[0]))
+        # y = Image.open("CompVis/NSFW_replace.png").convert("RGB").resize((hwc[1], hwc[0]))
         y = (np.array(y) / 255.0).astype(x.dtype)
         assert y.shape == x.shape
         return y
