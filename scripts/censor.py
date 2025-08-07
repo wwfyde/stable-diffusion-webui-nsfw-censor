@@ -5,7 +5,7 @@ from scripts.safety_checker import StableDiffusionSafetyChecker
 
 from transformers import AutoFeatureExtractor
 from PIL import Image
-
+import numpy as np
 from modules import scripts, shared
 
 safety_model_id = "CompVis/stable-diffusion-safety-checker"
@@ -42,7 +42,10 @@ def check_safety(x_image, safety_checker_adj: float = -0.01):
         clip_input=safety_checker_input.pixel_values,
         safety_checker_adj=safety_checker_adj,
     )
-
+    assert x_checked_image.shape[0] == len(has_nsfw_concept)
+    for i in range(len(has_nsfw_concept)):
+        if has_nsfw_concept[i]:
+            x_checked_image[i] = load_replacement(x_checked_image[i])
     return x_checked_image, has_nsfw_concept
 
 
@@ -64,3 +67,13 @@ class NsfwCheckScript(scripts.Script):
     def postprocess_batch(self, p, *args, **kwargs):
         images = kwargs["images"]
         images[:] = censor_batch(images)[:]
+
+def load_replacement(x):
+    try:
+        hwc = x.shape
+        y = Image.open("NSFW_replace.png").convert("RGB").resize((hwc[1], hwc[0]))
+        y = (np.array(y) / 255.0).astype(x.dtype)
+        assert y.shape == x.shape
+        return y
+    except Exception as e:
+        return x
