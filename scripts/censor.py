@@ -1,3 +1,5 @@
+import pathlib
+
 import torch
 
 # from diffusers.pipelines.stable_diffusion.safety_checker import StableDiffusionSafetyChecker
@@ -71,7 +73,8 @@ class NsfwCheckScript(scripts.Script):
 def load_replacement(x):
     try:
         hwc = x.shape
-        y = Image.open("NSFW_replace.png").convert("RGB").resize((hwc[1], hwc[0]))
+        image_path = pathlib.Path(__file__).absolute().parent.joinpath("NSFW_replace.png")
+        y = Image.open(image_path).convert("RGB").resize((hwc[1], hwc[0]))
         y = (np.array(y) / 255.0).astype(x.dtype)
         assert y.shape == x.shape
         return y
